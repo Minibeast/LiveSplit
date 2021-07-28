@@ -21,6 +21,7 @@ namespace LiveSplit.View
                 AverageSegmentsComparisonGenerator.ComparisonName,
                 MedianSegmentsComparisonGenerator.ComparisonName,
                 WorstSegmentsComparisonGenerator.ComparisonName,
+                WorstSplitTimesComparisonGenerator.ComparisonName,
                 PercentileComparisonGenerator.ComparisonName,
                 LatestRunComparisonGenerator.ComparisonName,
                 NoneComparisonGenerator.ComparisonName

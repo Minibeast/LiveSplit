@@ -27,6 +27,7 @@ namespace LiveSplit.Model.Comparisons
             yield return new AverageSegmentsComparisonGenerator(run);
             yield return new MedianSegmentsComparisonGenerator(run);
             yield return new WorstSegmentsComparisonGenerator(run);
+            yield return new WorstSplitTimesComparisonGenerator(run);
             yield return new PercentileComparisonGenerator(run);
             yield return new LatestRunComparisonGenerator(run);
             yield return new NoneComparisonGenerator(run);
