@@ -81,6 +81,7 @@ namespace LiveSplit.UI.LayoutFactories
             }
 
             settings.BackgroundImage = SettingsHelper.GetImageFromElement(element["BackgroundImage"]);
+            settings.BackgroundFolder = SettingsHelper.ParseString(element["BackgroundFolder"]);
 
             return settings;
         }

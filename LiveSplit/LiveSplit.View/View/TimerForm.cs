@@ -312,12 +312,32 @@ namespace LiveSplit.View
             TopMost = Layout.Settings.AlwaysOnTop;
             BackColor = Color.Black;
 
+            GenerateRandomImage();
+
             Server = new CommandServer(CurrentState);
             Server.Start();
 
             new System.Timers.Timer(1000) { Enabled = true }.Elapsed += RaceRefreshTimer_Elapsed;
 
             InitDragAndDrop();
+        }
+
+        public void GenerateRandomImage()
+        {
+            if (Layout.Settings.BackgroundType != BackgroundType.RandomImage)
+                return;
+
+            string[] files = Directory.GetFiles(Layout.Settings.BackgroundFolder);
+            Random random = new Random();
+            int thing = random.Next(0, files.Length);
+            try
+            {
+                Layout.Settings.BackgroundImage = Image.FromFile(files[thing]);
+            }
+            catch
+            {
+                MessageBox.Show("Random Image failed to load!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void InitDragAndDrop()
@@ -1359,7 +1379,7 @@ namespace LiveSplit.View
 
         private void DrawBackground(Graphics g)
         {
-            if (Layout.Settings.BackgroundType == BackgroundType.Image)
+            if (Layout.Settings.BackgroundType == BackgroundType.Image || Layout.Settings.BackgroundType == BackgroundType.RandomImage)
             {
                 if (Layout.Settings.BackgroundImage != null)
                 {

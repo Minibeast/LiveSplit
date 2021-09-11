@@ -73,6 +73,8 @@ namespace LiveSplit.View
                     return "Vertical Gradient";
                 case BackgroundType.Image:
                     return "Image";
+                case BackgroundType.RandomImage:
+                    return "Random Image";
                 default:
                     return "Solid Color";
             }
@@ -81,14 +83,20 @@ namespace LiveSplit.View
         void cmbGradientType_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selectedItem = cmbBackgroundType.SelectedItem.ToString();
-            btnBackground.Visible = selectedItem != "Solid Color" && selectedItem != "Image";
+            btnBackground.Visible = selectedItem != "Solid Color" && selectedItem != "Image" && selectedItem != "Random Image";
             btnBackground2.DataBindings.Clear();
-            lblImageOpacity.Enabled = lblBlur.Enabled = trkImageOpacity.Enabled = trkBlur.Enabled = selectedItem == "Image";
+            lblImageOpacity.Enabled = lblBlur.Enabled = trkImageOpacity.Enabled = trkBlur.Enabled = selectedItem == "Image" || selectedItem == "Random Image";
             if (selectedItem == "Image")
             {
                 btnBackground2.BackgroundImage = Settings.BackgroundImage;
                 btnBackground2.BackColor = Color.Transparent;
                 lblBackground.Text = "Image:";
+            }
+            else if (selectedItem == "Random Image")
+            {
+                btnBackground2.BackgroundImage = null;
+                btnBackground2.BackColor = Color.Transparent;
+                lblBackground.Text = "Folder:";
             }
             else
             {
@@ -127,6 +135,15 @@ namespace LiveSplit.View
                         Log.Error(ex);
                         MessageBox.Show("Could not load image!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
+                }
+            } else if (cmbBackgroundType.SelectedItem.ToString() == "Random Image")
+            {
+                var dialog = new FolderBrowserDialog();
+                DialogResult result = dialog.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(dialog.SelectedPath))
+                {
+                    Settings.BackgroundFolder = dialog.SelectedPath;
                 }
             }
             else

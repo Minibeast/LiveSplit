@@ -24,6 +24,7 @@ namespace LiveSplit.Options
         public BackgroundType BackgroundType { get; set; }
 
         public Image BackgroundImage { get; set; }
+        public string BackgroundFolder { get; set; }
         public float ImageOpacity { get; set; }
         public float ImageBlur { get; set; }
 
@@ -76,6 +77,7 @@ namespace LiveSplit.Options
             MousePassThroughWhileRunning = settings.MousePassThroughWhileRunning;
             BackgroundType = settings.BackgroundType;
             BackgroundImage = settings.BackgroundImage;
+            BackgroundFolder = settings.BackgroundFolder;
             ImageOpacity = settings.ImageOpacity;
             ImageBlur = settings.ImageBlur;
         }
