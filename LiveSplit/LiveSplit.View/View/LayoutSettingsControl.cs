@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Drawing;
 using System.Windows.Forms;
 using LiveSplit.UI;
@@ -144,6 +145,17 @@ namespace LiveSplit.View
                 if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(dialog.SelectedPath))
                 {
                     Settings.BackgroundFolder = dialog.SelectedPath;
+                    string[] files = Directory.GetFiles(dialog.SelectedPath);
+                    Random random = new Random();
+                    int thing = random.Next(0, files.Length);
+                    try
+                    {
+                        Settings.BackgroundImage = Image.FromFile(files[thing]);
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Random Image failed to load!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
             else

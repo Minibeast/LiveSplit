@@ -327,6 +327,9 @@ namespace LiveSplit.View
             if (Layout.Settings.BackgroundType != BackgroundType.RandomImage)
                 return;
 
+            if (Layout.Settings.BackgroundFolder == null)
+                return;
+
             string[] files = Directory.GetFiles(Layout.Settings.BackgroundFolder);
             Random random = new Random();
             int thing = random.Next(0, files.Length);
