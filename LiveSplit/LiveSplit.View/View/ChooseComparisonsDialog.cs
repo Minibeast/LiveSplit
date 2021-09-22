@@ -14,7 +14,7 @@ namespace LiveSplit.View
         {
             InitializeComponent();
             DialogInitialized = false;
-            comparisonsListBox.Items.AddRange(new []
+            comparisonsListBox.Items.AddRange(new[]
             {
                 BestSegmentsComparisonGenerator.ComparisonName,
                 BestSplitTimesComparisonGenerator.ComparisonName,
@@ -23,6 +23,8 @@ namespace LiveSplit.View
                 WorstSegmentsComparisonGenerator.ComparisonName,
                 PercentileComparisonGenerator.ComparisonName,
                 LatestRunComparisonGenerator.ComparisonName,
+                DistributedComparisonGenerator.ComparisonName,
+                WorstSplitTimesComparisonGenerator.ComparisonName,
                 NoneComparisonGenerator.ComparisonName
             });
         }

@@ -65,6 +65,8 @@ namespace LiveSplit.View
         private Image blurredBackground { get; set; }
         private Image bakedBackground { get; set; }
 
+        private bool SizeChangedByMenu { get; set; }
+
         public CommandServer Server { get; set; }
 
         protected GraphicsCache GlobalCache { get; set; }
@@ -182,6 +184,8 @@ namespace LiveSplit.View
             LiveSplitCoreFactory.LoadLiveSplitCore();
 
             SetWindowTitle();
+
+            SizeChangedByMenu = false;
 
             SpeedrunCom.Authenticator = new SpeedrunComOAuthForm();
 
@@ -312,12 +316,35 @@ namespace LiveSplit.View
             TopMost = Layout.Settings.AlwaysOnTop;
             BackColor = Color.Black;
 
+            GenerateRandomImage();
+
             Server = new CommandServer(CurrentState);
             Server.Start();
 
             new System.Timers.Timer(1000) { Enabled = true }.Elapsed += RaceRefreshTimer_Elapsed;
 
             InitDragAndDrop();
+        }
+
+        public void GenerateRandomImage()
+        {
+            if (Layout.Settings.BackgroundType != BackgroundType.RandomImage)
+                return;
+
+            if (Layout.Settings.BackgroundFolder == null)
+                return;
+
+            string[] files = Directory.GetFiles(Layout.Settings.BackgroundFolder);
+            Random random = new Random();
+            int thing = random.Next(0, files.Length);
+            try
+            {
+                Layout.Settings.BackgroundImage = Image.FromFile(files[thing]);
+            }
+            catch
+            {
+                MessageBox.Show("Random Image failed to load!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void InitDragAndDrop()
@@ -629,20 +656,27 @@ namespace LiveSplit.View
 
         void TimerForm_SizeChanged(object sender, EventArgs e)
         {
-            CreateBakedBackground();
-            if (RefreshesRemaining <= 0)
-            {
+            if (SizeChangedByMenu && !Layout.Settings.AllowResizing) {
                 if (Layout.Mode == LayoutMode.Vertical)
+                        Size = new Size(Layout.VerticalWidth, Layout.VerticalHeight);
+                    else
+                        Size = new Size(Layout.HorizontalWidth, Layout.HorizontalHeight);
+            } else {
+                CreateBakedBackground();
+                if (RefreshesRemaining <= 0)
                 {
-                    Layout.VerticalWidth = Size.Width;
-                    Layout.VerticalHeight = Size.Height;
+                    if (Layout.Mode == LayoutMode.Vertical)
+                    {
+                        Layout.VerticalWidth = Size.Width;
+                        Layout.VerticalHeight = Size.Height;
+                    }
+                    else
+                    {
+                        Layout.HorizontalWidth = Size.Width;
+                        Layout.HorizontalHeight = Size.Height;
+                    }
+                    MaintainMinimumSize();
                 }
-                else
-                {
-                    Layout.HorizontalWidth = Size.Width;
-                    Layout.HorizontalHeight = Size.Height;
-                }
-                MaintainMinimumSize();
             }
         }
 
@@ -1359,7 +1393,7 @@ namespace LiveSplit.View
 
         private void DrawBackground(Graphics g)
         {
-            if (Layout.Settings.BackgroundType == BackgroundType.Image)
+            if (Layout.Settings.BackgroundType == BackgroundType.Image || Layout.Settings.BackgroundType == BackgroundType.RandomImage)
             {
                 if (Layout.Settings.BackgroundImage != null)
                 {
@@ -1868,11 +1902,40 @@ namespace LiveSplit.View
                 || CurrentState.CurrentPhase == TimerPhase.Paused))
             {
                 DontRedraw = true;
-                result = MessageBox.Show(this, "This run did not beat your current splits. Would you like to save this run as a Personal Best?", "Save as Personal Best?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                string name = "";
+                result = InputBox.Show("New Comparison", "Comparison Name: (leave blank to replace Personal Best)", ref name);
                 DontRedraw = false;
-                if (result == DialogResult.Yes)
+                if (result == DialogResult.OK)
                 {
-                    Model.ResetAndSetAttemptAsPB();
+                    if (name.Length <= 0)
+                        Model.ResetAndSetAttemptAsPB();
+                    else
+                    {
+                        if (CurrentState.Run.CustomComparisons.Contains(name))
+                        {
+                            result = MessageBox.Show("This Comparison already exists. Would you like to overwrite it?", "Overwrite " + name + "?", MessageBoxButtons.YesNoCancel);
+                            if (result == DialogResult.Yes)
+                            {
+                                foreach (var current in CurrentState.Run)
+                                    current.Comparisons[name] = current.SplitTime;
+                            }
+                            else if (result == DialogResult.Cancel)
+                                return false;
+                        }
+                        else if (CurrentState.Run.Comparisons.Contains(name))
+                        {
+                            result = MessageBox.Show("This Comparison already exists and is not a custom comparison.", "The change will be ignored.", MessageBoxButtons.OKCancel);
+                            if (result == DialogResult.Cancel)
+                                return false;
+                        }
+                        else
+                        {
+                            CurrentState.Run.CustomComparisons.Add(name);
+                            foreach (var current in CurrentState.Run)
+                                current.Comparisons[name] = current.SplitTime;
+                        }
+                        Model.Reset();
+                    }
                 }
                 else if (result == DialogResult.Cancel)
                     return false;
@@ -2871,12 +2934,14 @@ namespace LiveSplit.View
 
         private void TimerForm_ResizeBegin(object sender, EventArgs e)
         {
+            SizeChangedByMenu = true;
             if (Size.Height > 0)
                 ResizingInitialAspectRatio = (float)Size.Width / Size.Height;
         }
 
         private void TimerForm_ResizeEnd(object sender, EventArgs e)
         {
+            SizeChangedByMenu = false;
             ResizingInitialAspectRatio = null;
         }
 

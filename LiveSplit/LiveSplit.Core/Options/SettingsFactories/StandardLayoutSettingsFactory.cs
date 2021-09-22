@@ -34,10 +34,12 @@ namespace LiveSplit.Options.SettingsFactories
                 DropShadows = true,
                 BackgroundType = BackgroundType.SolidColor,
                 BackgroundImage = null,
+                BackgroundFolder = null,
                 ImageOpacity = 1f,
                 ImageBlur = 0f,
                 Opacity = 1,
-                MousePassThroughWhileRunning = false
+                MousePassThroughWhileRunning = false,
+                AllowResizing = true
             };
         }
     }

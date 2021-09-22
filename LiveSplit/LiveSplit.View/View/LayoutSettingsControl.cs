@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Drawing;
 using System.Windows.Forms;
 using LiveSplit.UI;
@@ -51,11 +52,14 @@ namespace LiveSplit.View
             btnPausedColor.DataBindings.Add("BackColor", Settings, "PausedColor", false, DataSourceUpdateMode.OnPropertyChanged);
             btnTextOutlineColor.DataBindings.Add("BackColor", Settings, "TextOutlineColor", false, DataSourceUpdateMode.OnPropertyChanged);
             btnShadowsColor.DataBindings.Add("BackColor", Settings, "ShadowsColor", false, DataSourceUpdateMode.OnPropertyChanged);
+            btnSilverSegmentsColor.DataBindings.Add("BackColor", Settings, "SilverSegmentsColor", false, DataSourceUpdateMode.OnPropertyChanged);
+            chkSilverSegments.DataBindings.Add("Checked", Settings, "UseSilverSegmentsColor", false, DataSourceUpdateMode.OnPropertyChanged);
             lblTimer.DataBindings.Add("Text", this, "TimerFont", false, DataSourceUpdateMode.OnPropertyChanged);
             lblText.DataBindings.Add("Text", this, "SplitNamesFont", false, DataSourceUpdateMode.OnPropertyChanged);
             lblTimes.DataBindings.Add("Text", this, "MainFont", false, DataSourceUpdateMode.OnPropertyChanged);
             trkOpacity.DataBindings.Add("Value", this, "Opacity", false, DataSourceUpdateMode.OnPropertyChanged);
             chkMousePassThroughWhileRunning.DataBindings.Add("Checked", Settings, "MousePassThroughWhileRunning", false, DataSourceUpdateMode.OnPropertyChanged);
+            chkAllowResizing.DataBindings.Add("Checked", Settings, "AllowResizing", false, DataSourceUpdateMode.OnPropertyChanged);
             trkImageOpacity.DataBindings.Add("Value", this, "ImageOpacity", false, DataSourceUpdateMode.OnPropertyChanged);
             trkBlur.DataBindings.Add("Value", this, "ImageBlur", false, DataSourceUpdateMode.OnPropertyChanged);
 
@@ -73,6 +77,8 @@ namespace LiveSplit.View
                     return "Vertical Gradient";
                 case BackgroundType.Image:
                     return "Image";
+                case BackgroundType.RandomImage:
+                    return "Random Image";
                 default:
                     return "Solid Color";
             }
@@ -81,14 +87,20 @@ namespace LiveSplit.View
         void cmbGradientType_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selectedItem = cmbBackgroundType.SelectedItem.ToString();
-            btnBackground.Visible = selectedItem != "Solid Color" && selectedItem != "Image";
+            btnBackground.Visible = selectedItem != "Solid Color" && selectedItem != "Image" && selectedItem != "Random Image";
             btnBackground2.DataBindings.Clear();
-            lblImageOpacity.Enabled = lblBlur.Enabled = trkImageOpacity.Enabled = trkBlur.Enabled = selectedItem == "Image";
+            lblImageOpacity.Enabled = lblBlur.Enabled = trkImageOpacity.Enabled = trkBlur.Enabled = selectedItem == "Image" || selectedItem == "Random Image";
             if (selectedItem == "Image")
             {
                 btnBackground2.BackgroundImage = Settings.BackgroundImage;
                 btnBackground2.BackColor = Color.Transparent;
                 lblBackground.Text = "Image:";
+            }
+            else if (selectedItem == "Random Image")
+            {
+                btnBackground2.BackgroundImage = null;
+                btnBackground2.BackColor = Color.Transparent;
+                lblBackground.Text = "Folder:";
             }
             else
             {
@@ -126,6 +138,27 @@ namespace LiveSplit.View
                     {
                         Log.Error(ex);
                         MessageBox.Show("Could not load image!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            else if (cmbBackgroundType.SelectedItem.ToString() == "Random Image")
+            {
+                var dialog = new FolderBrowserDialog();
+                DialogResult result = dialog.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(dialog.SelectedPath))
+                {
+                    Settings.BackgroundFolder = dialog.SelectedPath;
+                    string[] files = Directory.GetFiles(dialog.SelectedPath);
+                    Random random = new Random();
+                    int thing = random.Next(0, files.Length);
+                    try
+                    {
+                        Settings.BackgroundImage = Image.FromFile(files[thing]);
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Random Image failed to load!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -170,6 +203,11 @@ namespace LiveSplit.View
             label9.Enabled = btnGlod.Enabled = !chkRainbow.Checked;
         }
 
+        private void chkSilverSegments_CheckedChanged(object sender, EventArgs e)
+        {
+            lblSilverSegment.Enabled = btnSilverSegmentsColor.Enabled = chkSilverSegments.Checked;
+        }
+
         private void chkAntiAliasing_CheckedChanged(object sender, EventArgs e)
         {
             lblOutlines.Enabled = btnTextOutlineColor.Enabled = chkAntiAliasing.Checked;
@@ -179,6 +217,7 @@ namespace LiveSplit.View
         {
             chkRainbow_CheckedChanged(null, null);
             chkAntiAliasing_CheckedChanged(null, null);
+            chkSilverSegments_CheckedChanged(null, null);
         }
     }
 }

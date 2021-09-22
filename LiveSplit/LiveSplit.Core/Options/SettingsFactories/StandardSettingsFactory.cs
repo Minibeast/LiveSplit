@@ -50,6 +50,8 @@ namespace LiveSplit.Options.SettingsFactories
                     { WorstSegmentsComparisonGenerator.ComparisonName, false},
                     { PercentileComparisonGenerator.ComparisonName, false },
                     { LatestRunComparisonGenerator.ComparisonName, false },
+                    { DistributedComparisonGenerator.ComparisonName, false },
+                    { WorstSplitTimesComparisonGenerator.ComparisonName, false },
                     { NoneComparisonGenerator.ComparisonName, false }
                 }
             };
